@@ -2,7 +2,7 @@ name: bump_report
 
 description: Bump Report is an Application where users can report bumps in the streets, roads, etc., in order to have a report and make possible future repairs.
 
-version: 0.1.0+1
+version: 0.2.0+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
