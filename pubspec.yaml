@@ -2,7 +2,7 @@ name: bump_report
 
 description: Bump Report is an Application where users can report bumps in the streets, roads, etc., in order to have a report and make possible future repairs.
 
-version: 0.0.1+1
+version: 0.1.0+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.0
+  google_maps_flutter: ^1.0.2
+  location: ^3.0.2
 
 dev_dependencies:
   flutter_test:
@@ -20,3 +22,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/map-style.json
