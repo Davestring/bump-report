@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
+import 'package:bump_report/ui/widgets/index.dart' show RectButton;
+
 class MapScreen extends StatefulWidget {
   static const String routeName = '/map';
 
@@ -16,7 +18,6 @@ class _MapScreenState extends State<MapScreen> {
   final Location _geoLocation = Location();
 
   GoogleMapController _controller;
-  double _bearing, _tilt, _zoom;
 
   Future<void> _setCurrentLocation() async {
     final LocationData position = await _geoLocation.getLocation();
@@ -25,9 +26,7 @@ class _MapScreenState extends State<MapScreen> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(position.latitude, position.longitude),
-          bearing: _bearing,
-          tilt: _tilt,
-          zoom: _zoom,
+          zoom: 16.0,
         ),
       ),
     );
@@ -36,10 +35,6 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-
-    _bearing = 80.0;
-    _tilt = 20.0;
-    _zoom = 19.0;
   }
 
   @override
@@ -63,7 +58,24 @@ class _MapScreenState extends State<MapScreen> {
                 _controller = controller;
               });
             },
-          )
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: RectButton(
+              margin: EdgeInsets.symmetric(
+                vertical: MediaQuery.of(context).padding.bottom + 20.0,
+                horizontal: 25.0,
+              ),
+              backgroundColor: Colors.red,
+              height: 50.0,
+              icon: Icons.my_location,
+              iconColor: Colors.white,
+              iconSize: 25.0,
+              onClick: _setCurrentLocation,
+              splashColor: Colors.red[700],
+              width: 50.0,
+            ),
+          ),
         ],
       ),
     );
