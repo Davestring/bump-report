@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -32,6 +33,16 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  void _onMapCreated(GoogleMapController controller) {
+    setState(() {
+      _controller = controller;
+    });
+
+    rootBundle.loadString('assets/map-style.json').then((String data) {
+      _controller.setMapStyle(data);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,11 +64,7 @@ class _MapScreenState extends State<MapScreen> {
             myLocationButtonEnabled: false,
             myLocationEnabled: true,
             zoomControlsEnabled: false,
-            onMapCreated: (GoogleMapController controller) {
-              setState(() {
-                _controller = controller;
-              });
-            },
+            onMapCreated: _onMapCreated,
           ),
           Align(
             alignment: Alignment.bottomRight,
