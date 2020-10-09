@@ -1,21 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 import 'package:bump_report/ui/widgets/index.dart' show RectButton;
 
-class MapScreen extends StatefulWidget {
+class MapScreen extends StatelessWidget {
   static const String routeName = '/map';
 
   @override
-  _MapScreenState createState() => _MapScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
+      body: StreamBuilder<dynamic>(
+        stream: FirebaseFirestore.instance.collection('bump').snapshots(),
+        builder: (BuildContext ctx, AsyncSnapshot<dynamic> snapshot) {
+          if (!snapshot.hasData) {
+            return Container(
+              alignment: Alignment.center,
+              height: MediaQuery.of(ctx).size.height,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey[600]),
+              ),
+            );
+          }
+
+          return Map();
+        },
+      ),
+    );
+  }
 }
 
-class _MapScreenState extends State<MapScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+class Map extends StatefulWidget {
+  @override
+  _MapState createState() => _MapState();
+}
 
+class _MapState extends State<Map> {
   final Location _geoLocation = Location();
 
   GoogleMapController _controller;
@@ -50,41 +74,37 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      key: _scaffoldKey,
-      body: Stack(
-        children: <Widget>[
-          GoogleMap(
-            compassEnabled: false,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(23.634501, -102.552784),
-            ),
-            mapType: MapType.normal,
-            myLocationButtonEnabled: false,
-            myLocationEnabled: true,
-            zoomControlsEnabled: false,
-            onMapCreated: _onMapCreated,
+    return Stack(
+      children: <Widget>[
+        GoogleMap(
+          compassEnabled: false,
+          initialCameraPosition: const CameraPosition(
+            target: LatLng(23.634501, -102.552784),
           ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: RectButton(
-              margin: EdgeInsets.symmetric(
-                vertical: MediaQuery.of(context).padding.bottom + 20.0,
-                horizontal: 25.0,
-              ),
-              backgroundColor: Colors.red,
-              height: 50.0,
-              icon: Icons.my_location,
-              iconColor: Colors.white,
-              iconSize: 25.0,
-              onClick: _setCurrentLocation,
-              splashColor: Colors.red[700],
-              width: 50.0,
+          mapType: MapType.normal,
+          myLocationButtonEnabled: false,
+          myLocationEnabled: true,
+          zoomControlsEnabled: false,
+          onMapCreated: _onMapCreated,
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: RectButton(
+            backgroundColor: Colors.blueGrey[600],
+            height: 50.0,
+            icon: Icons.my_location,
+            iconColor: Colors.white,
+            iconSize: 25.0,
+            margin: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).padding.bottom + 20.0,
+              horizontal: 25.0,
             ),
+            onClick: _setCurrentLocation,
+            splashColor: Colors.blueGrey[800],
+            width: 50.0,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
