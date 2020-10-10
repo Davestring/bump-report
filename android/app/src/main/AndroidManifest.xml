@@ -3,7 +3,7 @@
   package="app.dmartinez.bump_report">
   <application
     android:name="io.flutter.app.FlutterApplication"
-    android:label="bump_report"
+    android:label="Bump Report"
     android:icon="@mipmap/ic_launcher">
 
     <activity
