@@ -5,10 +5,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
+import 'package:bump_report/models/index.dart' show Bump;
 import 'package:bump_report/ui/widgets/index.dart' show RectButton;
 
 class MapScreen extends StatelessWidget {
   static const String routeName = '/map';
+
+  List<Bump> _transformResponse(List<DocumentSnapshot> data) {
+    return data
+        .map((DocumentSnapshot item) => Bump.fromDocument(item))
+        .where((Bump item) => item.bumpStatus == 0 || item.bumpStatus == 1)
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +35,13 @@ class MapScreen extends StatelessWidget {
             );
           }
 
-          return Map();
+          final List<Bump> bumps = _transformResponse(
+            snapshot.data.documents as List<DocumentSnapshot>,
+          );
+
+          return Map(
+            bumps: bumps,
+          );
         },
       ),
     );
@@ -35,6 +49,14 @@ class MapScreen extends StatelessWidget {
 }
 
 class Map extends StatefulWidget {
+  const Map({
+    Key key,
+    @required this.bumps,
+  })  : assert(bumps != null),
+        super(key: key);
+
+  final List<Bump> bumps;
+
   @override
   _MapState createState() => _MapState();
 }
