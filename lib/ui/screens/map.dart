@@ -39,7 +39,7 @@ class MapScreen extends StatelessWidget {
             snapshot.data.documents as List<DocumentSnapshot>,
           );
 
-          return Map(
+          return BumpsMap(
             bumps: bumps,
           );
         },
@@ -48,8 +48,8 @@ class MapScreen extends StatelessWidget {
   }
 }
 
-class Map extends StatefulWidget {
-  const Map({
+class BumpsMap extends StatefulWidget {
+  const BumpsMap({
     Key key,
     @required this.bumps,
   })  : assert(bumps != null),
@@ -58,13 +58,14 @@ class Map extends StatefulWidget {
   final List<Bump> bumps;
 
   @override
-  _MapState createState() => _MapState();
+  _BumpsMapState createState() => _BumpsMapState();
 }
 
-class _MapState extends State<Map> {
+class _BumpsMapState extends State<BumpsMap> {
   final Location _geoLocation = Location();
 
   GoogleMapController _controller;
+  Set<Marker> _markers;
 
   Future<void> _setCurrentLocation() async {
     final LocationData position = await _geoLocation.getLocation();
@@ -92,6 +93,20 @@ class _MapState extends State<Map> {
   @override
   void initState() {
     super.initState();
+
+    final Map<String, Marker> markers = <String, Marker>{};
+
+    for (final Bump item in widget.bumps) {
+      markers[item.bumpId] = Marker(
+        markerId: MarkerId('dest_marker'),
+        position: LatLng(
+          item.bumpCoords.latitude,
+          item.bumpCoords.longitude,
+        ),
+      );
+    }
+
+    _markers = markers.values.toSet();
   }
 
   @override
@@ -104,6 +119,7 @@ class _MapState extends State<Map> {
             target: LatLng(23.634501, -102.552784),
           ),
           mapType: MapType.normal,
+          markers: _markers,
           myLocationButtonEnabled: false,
           myLocationEnabled: true,
           zoomControlsEnabled: false,
