@@ -5,10 +5,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
+import 'package:bump_report/models/index.dart' show Bump;
 import 'package:bump_report/ui/widgets/index.dart' show RectButton;
 
 class MapScreen extends StatelessWidget {
   static const String routeName = '/map';
+
+  List<Bump> _transformResponse(List<DocumentSnapshot> data) {
+    return data
+        .map((DocumentSnapshot item) => Bump.fromDocument(item))
+        .where((Bump item) => item.bumpStatus == 0 || item.bumpStatus == 1)
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,22 +35,37 @@ class MapScreen extends StatelessWidget {
             );
           }
 
-          return Map();
+          final List<Bump> bumps = _transformResponse(
+            snapshot.data.documents as List<DocumentSnapshot>,
+          );
+
+          return BumpsMap(
+            bumps: bumps,
+          );
         },
       ),
     );
   }
 }
 
-class Map extends StatefulWidget {
+class BumpsMap extends StatefulWidget {
+  const BumpsMap({
+    Key key,
+    @required this.bumps,
+  })  : assert(bumps != null),
+        super(key: key);
+
+  final List<Bump> bumps;
+
   @override
-  _MapState createState() => _MapState();
+  _BumpsMapState createState() => _BumpsMapState();
 }
 
-class _MapState extends State<Map> {
+class _BumpsMapState extends State<BumpsMap> {
   final Location _geoLocation = Location();
 
   GoogleMapController _controller;
+  Set<Marker> _markers;
 
   Future<void> _setCurrentLocation() async {
     final LocationData position = await _geoLocation.getLocation();
@@ -70,6 +93,20 @@ class _MapState extends State<Map> {
   @override
   void initState() {
     super.initState();
+
+    final Map<String, Marker> markers = <String, Marker>{};
+
+    for (final Bump item in widget.bumps) {
+      markers[item.bumpId] = Marker(
+        markerId: MarkerId('dest_marker'),
+        position: LatLng(
+          item.bumpCoords.latitude,
+          item.bumpCoords.longitude,
+        ),
+      );
+    }
+
+    _markers = markers.values.toSet();
   }
 
   @override
@@ -82,6 +119,7 @@ class _MapState extends State<Map> {
             target: LatLng(23.634501, -102.552784),
           ),
           mapType: MapType.normal,
+          markers: _markers,
           myLocationButtonEnabled: false,
           myLocationEnabled: true,
           zoomControlsEnabled: false,
