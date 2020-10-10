@@ -120,9 +120,29 @@ class _ReportState extends State<Report> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              Container(
+                alignment: Alignment.topRight,
+                width: deviceWidth,
+                child: CloseButton(
+                  color: Colors.blueGrey[800],
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              Container(
+                width: deviceWidth,
+                child: Text(
+                  'Bump Report',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.blueGrey[600],
+                    fontSize: 40.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               InputText(
                 attributeName: 'latitude',
-                inputMargin: const EdgeInsets.fromLTRB(25.0, 25.0, 25.0, 12.0),
+                inputMargin: const EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 12.0),
                 inputWidth: deviceWidth * 0.50,
                 label: 'Latitude',
                 inputValidators: <String Function(dynamic)>[
