@@ -6,10 +6,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 import 'package:bump_report/models/index.dart' show Bump;
+import 'package:bump_report/ui/pages/index.dart' show Report;
 import 'package:bump_report/ui/widgets/index.dart' show RectButton;
 
 class MapScreen extends StatelessWidget {
   static const String routeName = '/map';
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Bump> _transformResponse(List<DocumentSnapshot> data) {
     return data
@@ -18,10 +21,27 @@ class MapScreen extends StatelessWidget {
         .toList();
   }
 
+  Set<Marker> _getMarkers(List<Bump> bumps) {
+    final Map<String, Marker> markers = <String, Marker>{};
+
+    for (final Bump item in bumps) {
+      markers[item.bumpId] = Marker(
+        markerId: MarkerId(item.bumpId),
+        position: LatLng(
+          item.bumpCoords.latitude,
+          item.bumpCoords.longitude,
+        ),
+      );
+    }
+
+    return markers.values.toSet();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
+      key: _scaffoldKey,
       body: StreamBuilder<dynamic>(
         stream: FirebaseFirestore.instance.collection('bump').snapshots(),
         builder: (BuildContext ctx, AsyncSnapshot<dynamic> snapshot) {
@@ -40,7 +60,8 @@ class MapScreen extends StatelessWidget {
           );
 
           return BumpsMap(
-            bumps: bumps,
+            markers: _getMarkers(bumps),
+            scaffoldKey: _scaffoldKey,
           );
         },
       ),
@@ -51,11 +72,14 @@ class MapScreen extends StatelessWidget {
 class BumpsMap extends StatefulWidget {
   const BumpsMap({
     Key key,
-    @required this.bumps,
-  })  : assert(bumps != null),
+    @required this.markers,
+    @required this.scaffoldKey,
+  })  : assert(markers != null),
+        assert(scaffoldKey != null),
         super(key: key);
 
-  final List<Bump> bumps;
+  final Set<Marker> markers;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   _BumpsMapState createState() => _BumpsMapState();
@@ -65,7 +89,6 @@ class _BumpsMapState extends State<BumpsMap> {
   final Location _geoLocation = Location();
 
   GoogleMapController _controller;
-  Set<Marker> _markers;
 
   Future<void> _setCurrentLocation() async {
     final LocationData position = await _geoLocation.getLocation();
@@ -90,23 +113,25 @@ class _BumpsMapState extends State<BumpsMap> {
     });
   }
 
+  Future<void> _onCreateReport() async {
+    final LocationData position = await _geoLocation.getLocation();
+
+    await showModalBottomSheet<Widget>(
+      backgroundColor: Colors.transparent,
+      context: widget.scaffoldKey.currentContext,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Report(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-
-    final Map<String, Marker> markers = <String, Marker>{};
-
-    for (final Bump item in widget.bumps) {
-      markers[item.bumpId] = Marker(
-        markerId: MarkerId('dest_marker'),
-        position: LatLng(
-          item.bumpCoords.latitude,
-          item.bumpCoords.longitude,
-        ),
-      );
-    }
-
-    _markers = markers.values.toSet();
   }
 
   @override
@@ -119,7 +144,7 @@ class _BumpsMapState extends State<BumpsMap> {
             target: LatLng(23.634501, -102.552784),
           ),
           mapType: MapType.normal,
-          markers: _markers,
+          markers: widget.markers,
           myLocationButtonEnabled: false,
           myLocationEnabled: true,
           zoomControlsEnabled: false,
@@ -134,10 +159,27 @@ class _BumpsMapState extends State<BumpsMap> {
             iconColor: Colors.white,
             iconSize: 25.0,
             margin: EdgeInsets.symmetric(
-              vertical: MediaQuery.of(context).padding.bottom + 20.0,
+              vertical: MediaQuery.of(context).padding.bottom + 35.0,
               horizontal: 25.0,
             ),
             onClick: _setCurrentLocation,
+            splashColor: Colors.blueGrey[800],
+            width: 50.0,
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: RectButton(
+            backgroundColor: Colors.blueGrey[600],
+            height: 50.0,
+            icon: Icons.report,
+            iconColor: Colors.white,
+            iconSize: 25.0,
+            margin: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).padding.bottom + 35.0,
+              horizontal: 25.0,
+            ),
+            onClick: _onCreateReport,
             splashColor: Colors.blueGrey[800],
             width: 50.0,
           ),
