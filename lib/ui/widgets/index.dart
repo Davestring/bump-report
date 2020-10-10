@@ -1,2 +1,1 @@
-export 'buttons/rect.dart';
-export 'buttons/rounded.dart';
+export 'rect_button.dart';

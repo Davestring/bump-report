@@ -6,10 +6,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 import 'package:bump_report/models/index.dart' show Bump;
+import 'package:bump_report/ui/pages/index.dart' show Report;
 import 'package:bump_report/ui/widgets/index.dart' show RectButton;
 
 class MapScreen extends StatelessWidget {
   static const String routeName = '/map';
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Bump> _transformResponse(List<DocumentSnapshot> data) {
     return data
@@ -22,6 +25,7 @@ class MapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
+      key: _scaffoldKey,
       body: StreamBuilder<dynamic>(
         stream: FirebaseFirestore.instance.collection('bump').snapshots(),
         builder: (BuildContext ctx, AsyncSnapshot<dynamic> snapshot) {
@@ -41,6 +45,7 @@ class MapScreen extends StatelessWidget {
 
           return BumpsMap(
             bumps: bumps,
+            scaffoldKey: _scaffoldKey,
           );
         },
       ),
@@ -52,10 +57,13 @@ class BumpsMap extends StatefulWidget {
   const BumpsMap({
     Key key,
     @required this.bumps,
+    @required this.scaffoldKey,
   })  : assert(bumps != null),
+        assert(scaffoldKey != null),
         super(key: key);
 
   final List<Bump> bumps;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   _BumpsMapState createState() => _BumpsMapState();
@@ -88,6 +96,17 @@ class _BumpsMapState extends State<BumpsMap> {
     rootBundle.loadString('assets/map-style.json').then((String data) {
       _controller.setMapStyle(data);
     });
+  }
+
+  void _onCreateReport() {
+    showModalBottomSheet<Widget>(
+      backgroundColor: Colors.transparent,
+      context: widget.scaffoldKey.currentContext,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Report();
+      },
+    );
   }
 
   @override
@@ -134,10 +153,27 @@ class _BumpsMapState extends State<BumpsMap> {
             iconColor: Colors.white,
             iconSize: 25.0,
             margin: EdgeInsets.symmetric(
-              vertical: MediaQuery.of(context).padding.bottom + 20.0,
+              vertical: MediaQuery.of(context).padding.bottom + 35.0,
               horizontal: 25.0,
             ),
             onClick: _setCurrentLocation,
+            splashColor: Colors.blueGrey[800],
+            width: 50.0,
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: RectButton(
+            backgroundColor: Colors.blueGrey[600],
+            height: 50.0,
+            icon: Icons.report,
+            iconColor: Colors.white,
+            iconSize: 25.0,
+            margin: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).padding.bottom + 35.0,
+              horizontal: 25.0,
+            ),
+            onClick: _onCreateReport,
             splashColor: Colors.blueGrey[800],
             width: 50.0,
           ),
