@@ -30,3 +30,6 @@ flutter:
 
   assets:
     - assets/map-style.json
+    - assets/in-repair.png
+    - assets/reported.png
+    

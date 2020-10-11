@@ -7,12 +7,21 @@ import 'package:location/location.dart';
 
 import 'package:bump_report/models/index.dart' show Bump;
 import 'package:bump_report/ui/pages/index.dart' show Report;
+import 'package:bump_report/ui/widgets/index.dart' show Loading;
 import 'package:bump_report/ui/widgets/index.dart' show RectButton;
 
-class MapScreen extends StatelessWidget {
+class MapScreen extends StatefulWidget {
   static const String routeName = '/map';
 
+  @override
+  _MapScreenState createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  BitmapDescriptor _reportedIcon;
+  BitmapDescriptor _inRepairIcon;
 
   List<Bump> _transformResponse(List<DocumentSnapshot> data) {
     return data
@@ -21,11 +30,12 @@ class MapScreen extends StatelessWidget {
         .toList();
   }
 
-  Set<Marker> _getMarkers(List<Bump> bumps) {
+  Set<Marker> _setupMarkers(List<Bump> bumps) {
     final Map<String, Marker> markers = <String, Marker>{};
 
     for (final Bump item in bumps) {
       markers[item.bumpId] = Marker(
+        icon: item.bumpStatus == 0 ? _reportedIcon : _inRepairIcon,
         markerId: MarkerId(item.bumpId),
         position: LatLng(
           item.bumpCoords.latitude,
@@ -37,31 +47,53 @@ class MapScreen extends StatelessWidget {
     return markers.values.toSet();
   }
 
+  Future<void> _setCustomMarkers() async {
+    _reportedIcon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(),
+      'assets/reported.png',
+    );
+
+    _inRepairIcon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(),
+      'assets/in-repair.png',
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       key: _scaffoldKey,
-      body: StreamBuilder<dynamic>(
-        stream: FirebaseFirestore.instance.collection('bump').snapshots(),
-        builder: (BuildContext ctx, AsyncSnapshot<dynamic> snapshot) {
-          if (!snapshot.hasData) {
-            return Container(
-              alignment: Alignment.center,
-              height: MediaQuery.of(ctx).size.height,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey[600]),
-              ),
-            );
+      body: FutureBuilder<dynamic>(
+        future: _setCustomMarkers(),
+        builder: (BuildContext _, AsyncSnapshot<dynamic> fbSnapshot) {
+          if (fbSnapshot.connectionState == ConnectionState.waiting) {
+            return const Loading(color: Colors.blueGrey);
           }
 
-          final List<Bump> bumps = _transformResponse(
-            snapshot.data.documents as List<DocumentSnapshot>,
-          );
+          return StreamBuilder<dynamic>(
+            stream: FirebaseFirestore.instance.collection('bump').snapshots(),
+            builder: (BuildContext _, AsyncSnapshot<dynamic> sbSnapshot) {
+              if (sbSnapshot.connectionState == ConnectionState.waiting) {
+                return const Loading(color: Colors.blueGrey);
+              }
 
-          return BumpsMap(
-            markers: _getMarkers(bumps),
-            scaffoldKey: _scaffoldKey,
+              final List<Bump> bumps = _transformResponse(
+                sbSnapshot.data.documents as List<DocumentSnapshot>,
+              );
+
+              final Set<Marker> markers = _setupMarkers(bumps);
+
+              return BumpsMap(
+                markers: markers,
+                scaffoldKey: _scaffoldKey,
+              );
+            },
           );
         },
       ),
@@ -132,6 +164,13 @@ class _BumpsMapState extends State<BumpsMap> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _controller.dispose();
   }
 
   @override
