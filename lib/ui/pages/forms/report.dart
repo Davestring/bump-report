@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
+import 'package:bump_report/services/index.dart' show StorageService;
 import 'package:bump_report/ui/widgets/index.dart' show InputText;
 import 'package:bump_report/ui/widgets/index.dart' show InputPicture;
 import 'package:bump_report/ui/widgets/index.dart' show RegularButton;
 import 'package:bump_report/utils/index.dart' show showToast;
+import 'package:bump_report/services/index.dart' show getIt;
 
 class Report extends StatefulWidget {
   const Report({
@@ -43,6 +45,7 @@ class _ReportState extends State<Report> {
           _loading = true;
         });
 
+        final StorageService storage = getIt<StorageService>();
         final Map<String, dynamic> values = _fbKey.currentState.value;
         final List<int> bts = values['image'][0].readAsBytesSync() as List<int>;
         final Map<String, dynamic> payload = <String, dynamic>{
@@ -54,6 +57,7 @@ class _ReportState extends State<Report> {
           'createdAt': DateTime.now(),
           'image': base64Encode(bts),
           'status': 0,
+          'userId': storage.userId,
         };
 
         await FirebaseFirestore.instance.collection('bump').add(payload);
@@ -118,7 +122,7 @@ class _ReportState extends State<Report> {
               Container(
                 width: deviceWidth,
                 child: Text(
-                  'Pothole Report',
+                  'Bump Report',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.blueGrey[600],
@@ -160,7 +164,7 @@ class _ReportState extends State<Report> {
               InputPicture(
                 attributeName: 'image',
                 inputMargin: const EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 12.0),
-                label: 'Pothole Picture',
+                label: 'Bump Picture',
                 inputValidators: <String Function(dynamic)>[
                   FormBuilderValidators.required(),
                 ],
@@ -175,7 +179,7 @@ class _ReportState extends State<Report> {
                 margin: const EdgeInsets.only(top: 12.0, bottom: 25.0),
                 width: deviceWidth,
                 child: const Text(
-                  'Version v0.6.0',
+                  'Version v1.0.0',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.blueGrey,
