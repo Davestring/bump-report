@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
+import 'package:bump_report/services/index.dart' show StorageService;
 import 'package:bump_report/ui/screens/index.dart' show MapScreen;
 import 'package:bump_report/ui/widgets/index.dart' show InputText;
 import 'package:bump_report/ui/widgets/index.dart' show RegularButton;
 import 'package:bump_report/ui/widgets/index.dart' show Template;
 import 'package:bump_report/utils/index.dart' show showToast;
+import 'package:bump_report/services/index.dart' show getIt;
 
 class AboutUser extends StatefulWidget {
   const AboutUser({
@@ -23,6 +25,7 @@ class AboutUser extends StatefulWidget {
 }
 
 class _AboutUserState extends State<AboutUser> {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
 
   AutovalidateMode _autovalidate;
@@ -39,6 +42,7 @@ class _AboutUserState extends State<AboutUser> {
           _loading = true;
         });
 
+        final StorageService storage = getIt<StorageService>();
         final Map<String, dynamic> values = _fbKey.currentState.value;
         final Map<String, dynamic> payload = <String, dynamic>{
           'name': values['name'],
@@ -46,7 +50,8 @@ class _AboutUserState extends State<AboutUser> {
           'email': values['email'],
         };
 
-        await FirebaseFirestore.instance.collection('user').add(payload);
+        final DocumentReference ref = await _db.collection('user').add(payload);
+        storage.userId = ref.id;
 
         await showToast('We registered your data succesfully', Colors.green);
       } catch (_) {
@@ -130,7 +135,7 @@ class _AboutUserState extends State<AboutUser> {
               ],
             ),
             RegularButton(
-              label: 'Create Report',
+              label: 'Continue',
               isUpdating: _loading,
               margin: const EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 25.0),
               onClick: _onCreateReport,

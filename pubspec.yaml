@@ -16,9 +16,11 @@ dependencies:
   firebase_core: ^0.5.0+1
   flutter_form_builder: ^3.14.0
   fluttertoast: ^7.1.1
+  get_it: ^5.0.1
   google_maps_flutter: ^1.0.2
   image_picker: ^0.6.7+11
   location: ^3.0.2
+  shared_preferences: ^0.5.12
 
 dev_dependencies:
   flutter_test:
