@@ -31,9 +31,10 @@ class BumpReport extends StatelessWidget {
             primarySwatch: Colors.blueGrey,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          initialRoute: MapScreen.routeName,
+          initialRoute: OnboardingScreen.routeName,
           routes: <String, Widget Function(BuildContext)>{
             MapScreen.routeName: (BuildContext _) => MapScreen(),
+            OnboardingScreen.routeName: (BuildContext _) => OnboardingScreen(),
           },
         );
       },

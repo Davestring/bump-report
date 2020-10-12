@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:bump_report/ui/widgets/index.dart' show InputText;
 import 'package:bump_report/ui/widgets/index.dart' show InputPicture;
 import 'package:bump_report/ui/widgets/index.dart' show RegularButton;
+import 'package:bump_report/utils/index.dart' show showToast;
 
 class Report extends StatefulWidget {
   const Report({
@@ -32,19 +32,6 @@ class _ReportState extends State<Report> {
   AutovalidateMode _autovalidate;
 
   bool _loading;
-
-  /// Display on screen a custom toast using the [message] and [color] params.
-  Future<void> _showToast(String message, Color color) async {
-    await Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.TOP,
-      timeInSecForIosWeb: 5,
-      backgroundColor: color,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
-  }
 
   /// Verify if the form is success, if `true` it will create a new document
   /// with the data captured from the user, otherwise will display the form
@@ -71,9 +58,9 @@ class _ReportState extends State<Report> {
 
         await FirebaseFirestore.instance.collection('bump').add(payload);
 
-        await _showToast('Report created succesfully', Colors.green);
+        await showToast('Report created succesfully', Colors.green);
       } catch (_) {
-        await _showToast('Ups! an error occurred, try again later', Colors.red);
+        await showToast('Ups! an error occurred, try again later', Colors.red);
       } finally {
         setState(() {
           _loading = false;
@@ -131,7 +118,7 @@ class _ReportState extends State<Report> {
               Container(
                 width: deviceWidth,
                 child: Text(
-                  'Bump Report',
+                  'Pothole Report',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.blueGrey[600],
@@ -173,7 +160,7 @@ class _ReportState extends State<Report> {
               InputPicture(
                 attributeName: 'image',
                 inputMargin: const EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 12.0),
-                label: 'Bump Picture',
+                label: 'Pothole Picture',
                 inputValidators: <String Function(dynamic)>[
                   FormBuilderValidators.required(),
                 ],
@@ -181,8 +168,21 @@ class _ReportState extends State<Report> {
               RegularButton(
                 label: 'Create Report',
                 isUpdating: _loading,
-                margin: const EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 25.0),
+                margin: const EdgeInsets.symmetric(horizontal: 25.0),
                 onClick: _onCreateReport,
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 12.0, bottom: 25.0),
+                width: deviceWidth,
+                child: const Text(
+                  'Version v0.6.0',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
               ),
             ],
           ),
