@@ -135,12 +135,25 @@ class _BumpsMapState extends State<BumpsMap> {
     );
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  Future<void> _onMapCreated(GoogleMapController controller) async {
+    PermissionStatus permissionGranted;
+    bool serviceEnabled;
+
+    serviceEnabled = await _geoLocation.serviceEnabled();
+    if (!serviceEnabled) {
+      await _geoLocation.requestService();
+    }
+
+    permissionGranted = await _geoLocation.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      await _geoLocation.requestPermission();
+    }
+
     setState(() {
       _controller = controller;
     });
 
-    rootBundle.loadString('assets/map-style.json').then((String data) {
+    await rootBundle.loadString('assets/map-style.json').then((String data) {
       _controller.setMapStyle(data);
     });
   }
