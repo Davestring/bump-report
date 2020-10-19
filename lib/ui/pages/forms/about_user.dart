@@ -25,7 +25,7 @@ class AboutUser extends StatefulWidget {
 }
 
 class _AboutUserState extends State<AboutUser> {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final CollectionReference _db = FirebaseFirestore.instance.collection('user');
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
 
   AutovalidateMode _autovalidate;
@@ -45,13 +45,20 @@ class _AboutUserState extends State<AboutUser> {
         final StorageService storage = getIt<StorageService>();
         final Map<String, dynamic> values = _fbKey.currentState.value;
         final Map<String, dynamic> payload = <String, dynamic>{
-          'name': values['name'],
-          'lastname': values['lastname'],
-          'email': values['email'],
+          'name': values['name'].trim(),
+          'lastname': values['lastname'].trim(),
+          'email': values['email'].trim(),
         };
 
-        final DocumentReference ref = await _db.collection('user').add(payload);
-        storage.userId = ref.id;
+        final QuerySnapshot snapshot =
+            await _db.where('email', isEqualTo: payload['email']).get();
+
+        if (snapshot.docs.isEmpty) {
+          final DocumentReference ref = await _db.add(payload);
+          storage.userId = ref.id;
+        } else {
+          storage.userId = snapshot.docs.first.id;
+        }
 
         await showToast('We registered your data succesfully', Colors.green);
       } catch (_) {
@@ -128,7 +135,6 @@ class _AboutUserState extends State<AboutUser> {
               inputMargin: const EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 25.0),
               inputWidth: deviceWidth * 0.66,
               label: 'Email',
-              textCapitalization: TextCapitalization.sentences,
               inputValidators: <String Function(dynamic)>[
                 FormBuilderValidators.required(),
                 FormBuilderValidators.email(),

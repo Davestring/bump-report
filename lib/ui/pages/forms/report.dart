@@ -55,7 +55,7 @@ class _ReportState extends State<Report> {
             double.parse(values['longitude'] as String),
           ),
           'createdAt': DateTime.now(),
-          'image': base64Encode(bts),
+          'image': 'data:image/jpeg;charset=utf-8;base64,${base64Encode(bts)}',
           'status': 0,
           'userId': storage.userId,
         };
