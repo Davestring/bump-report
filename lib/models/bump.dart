@@ -20,10 +20,10 @@ class Bump {
 
   /// Creates a [Bump] instance without the [id] attribute.
   Bump.partial({
+    this.id,
     this.address,
     this.createdAt,
     this.coords,
-    this.image,
     this.status,
     this.userId,
   });
@@ -34,12 +34,11 @@ class Bump {
   /// Creates a [Bump] instance of a document of the Firebase bump collection.
   factory Bump.fromDocument(DocumentSnapshot snapshot) {
     final Map<String, dynamic> data = snapshot.data();
-    return Bump(
+    return Bump.partial(
       id: snapshot.id,
       address: data['address'] as String,
       createdAt: data['createdAt'] as Timestamp,
       coords: data['coords'] as GeoPoint,
-      image: data['image'] as String,
       status: data['status'] as int,
       userId: data['userId'] as String,
     );

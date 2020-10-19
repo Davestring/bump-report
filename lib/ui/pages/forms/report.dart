@@ -55,7 +55,7 @@ class _ReportState extends State<Report> {
             double.parse(values['longitude'] as String),
           ),
           'createdAt': DateTime.now(),
-          'image': base64Encode(bts),
+          'image': 'data:image/jpeg;charset=utf-8;base64,${base64Encode(bts)}',
           'status': 0,
           'userId': storage.userId,
         };
@@ -179,7 +179,7 @@ class _ReportState extends State<Report> {
                 margin: const EdgeInsets.only(top: 12.0, bottom: 25.0),
                 width: deviceWidth,
                 child: const Text(
-                  'Version v1.0.0',
+                  'Version v1.1.0',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.blueGrey,
